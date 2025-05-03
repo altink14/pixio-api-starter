@@ -1,8 +1,8 @@
 // src/lib/constants/media.ts
 
 export const DEPLOYMENT_IDS = {
-    image: '8f96cb86-5cbb-4ad0-9837-8a79eeb5103a',
-    video: 'd07cf1d5-412c-4270-b925-ffd6416abd1c',
+    image: '3910eafb-7921-4de3-bbcd-8756f0dd1cb6',
+    video: 'f9b35f20-228b-446b-820c-8f497aa5d8f3',
     firstLastFrameVideo: '8c463102-0525-4cf1-8535-731fee0f93b4',
   } as const;
   
