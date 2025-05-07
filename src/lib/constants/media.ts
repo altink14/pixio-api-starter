@@ -3,7 +3,7 @@
 export const DEPLOYMENT_IDS = {
     image: '3910eafb-7921-4de3-bbcd-8756f0dd1cb6',
     video: 'f9b35f20-228b-446b-820c-8f497aa5d8f3',
-    firstLastFrameVideo: '8c463102-0525-4cf1-8535-731fee0f93b4',
+    firstLastFrameVideo: '82783104-45d0-4da9-8bec-ffb25baa8d58',
   } as const;
   
   export const CREDIT_COSTS = {
