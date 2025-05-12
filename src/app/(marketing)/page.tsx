@@ -17,12 +17,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { PRICING_TIERS, PricingTier, getTierByPriceId } from '@/lib/config/pricing';
-import { Check, ExternalLink, ArrowRight, Star, Sparkles, Zap, Github } from 'lucide-react';
+import { Check, ExternalLink, ArrowRight, Star, Sparkles, Zap, Github, Crown } from 'lucide-react';
 import { formatPrice } from '@/lib/utils';
 import { toast } from 'sonner';
 import { createClient } from '@/lib/supabase/client';
 import { Subscription } from '@/types/db_types';
 import { Footer } from '@/components/shared/footer';
+import { TextPressure } from '@/components/ui/text-pressure';
+import { GradientTextPressure } from '@/components/ui/gradient-text-pressure';
 
 // Define prop types for components
 interface WorkflowCardProps {
@@ -428,7 +430,7 @@ const PricingSection = ({ userTierId, isAuthenticated }: PricingSectionProps) =>
     <>
       <div className="text-center mb-12">
         <GradientHeading className="mb-4 justify-center mx-auto text-center">
-          Simple, Transparent Pricing
+          Pricing
         </GradientHeading>
         <motion.p
           className="text-lg text-muted-foreground mb-8"
@@ -750,43 +752,34 @@ export default function LandingPage() {
             transition={{ duration: 0.8 }}
           >
             <motion.div
-              className="inline-block mb-4 px-4 py-1.5 bg-white/10 dark:bg-white/5 backdrop-blur-xl rounded-full text-foreground/90 text-sm border border-white/20 shadow-lg"
-              initial={mounted ? { opacity: 0, y: -20 } : { opacity: 1, y: 0 }}
-              animate={mounted ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: 0.1, duration: 0.6 }}
-            >
-              <span className="flex items-center gap-1.5">
-                <Sparkles className="h-4 w-4 text-accent/80" />
-                Powered by Pixio A100 GPUs
-              </span>
-            </motion.div>
+  className="inline-block mb-4 px-4 py-1.5 bg-white/10 dark:bg-white/5 backdrop-blur-xl rounded-full text-foreground/90 text-sm border border-white/20 shadow-lg"
+  initial={mounted ? { opacity: 0, y: -20 } : { opacity: 1, y: 0 }}
+  animate={mounted ? { opacity: 1, y: 0 } : {}}
+  transition={{ delay: 0.1, duration: 0.6 }}
+>
+  <span className="flex items-center gap-1.5">
+    Powered by 
+    <span className="relative inline-flex items-center">
+      <Crown className="absolute h-4 w-4 text-purple-500 top-[-15px] left-[80%] transform -translate-x-1/2 rotate-[15deg]" />
+      <span className="font-medium">Pixio</span>
+    </span>
+  </span>
+</motion.div>
 
             <motion.div
-              initial={mounted ? { opacity: 0, y: 20 } : { opacity: 1, y: 0 }}
-              animate={mounted ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: 0.3, duration: 0.8 }}
-            >
-              <h1
-                className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight bg-clip-text text-transparent"
-                style={{
-                  backgroundImage: "linear-gradient(to right, #7068F4, #FF64B4, #ffac4c)",
-                  backgroundSize: "200% 200%",
-                  ...(mounted ? {
-                    animation: "gradientMove 15s ease infinite"
-                  } : {})
-                }}
-              >
-                Pixio API Starter
-              </h1>
-
-              <style jsx global>{`
-                @keyframes gradientMove {
-                  0% { background-position: 0% 50% }
-                  50% { background-position: 100% 50% }
-                  100% { background-position: 0% 50% }
-                }
-              `}</style>
-            </motion.div>
+  initial={mounted ? { opacity: 0, y: 20 } : { opacity: 1, y: 0 }}
+  animate={mounted ? { opacity: 1, y: 0 } : {}}
+  transition={{ delay: 0.3, duration: 0.8 }}
+>
+  <GradientTextPressure
+    text="Welcome To Tini Studio"
+    className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight"
+    minFontSize={36}
+    width={true}
+    weight={true}
+    italic={true}
+  />
+</motion.div>
 
             <motion.p
               className="text-lg sm:text-xl text-foreground/80 mb-8 leading-relaxed"
@@ -804,12 +797,12 @@ export default function LandingPage() {
   animate={mounted ? { opacity: 1 } : {}}
   transition={{ delay: 0.7, duration: 0.8 }}
 >
-  <MagneticButton className="bg-gradient-to-r from-primary/90 to-secondary/90 hover:from-primary/95 hover:to-secondary/95 text-white rounded-md py-2 px-4 font-medium shadow-md hover:shadow-lg transition-shadow">
-    <Link href="https://api.myapps.ai" target="_blank" rel="noopener noreferrer" className="flex items-center">
-      <ExternalLink className="mr-2 h-4 w-4" />
-      Visit Pixio API
-    </Link>
-  </MagneticButton>
+<MagneticButton className="bg-gradient-to-r from-primary/90 to-secondary/90 hover:from-primary/95 hover:to-secondary/95 text-white rounded-md py-2 px-4 font-medium shadow-md hover:shadow-lg transition-shadow">
+  <Link href="http://localhost:3000/login" target="_blank" rel="noopener noreferrer" className="flex items-center">
+    <ExternalLink className="mr-2 h-4 w-4" />
+    Get Started
+  </Link>
+</MagneticButton>
 
   <MagneticButton
     className="glass-button bg-white/10 hover:bg-white/20 text-foreground rounded-md py-2 px-4 font-medium"
@@ -893,7 +886,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-xl font-semibold mb-2 text-primary">Image Generation</h3>
                 <p className="text-foreground/80">
-                  Create stunning images using advanced AI machines powered by the Pixio API. Turn text prompts into visual art.
+                Experience the creative potential of our AI. Turn descriptive text into compelling visuals that elevate your projects and bring clarity to your ideas.
                 </p>
               </motion.div>
             </MouseTrackCard>
@@ -914,8 +907,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-xl font-semibold mb-2 text-secondary">Video Generation</h3>
                 <p className="text-foreground/80">
-                  Transform concepts into mesmerizing videos. Our API harnesses the power of cutting-edge AI for fluid animations.
-                </p>
+                Elevate storytelling through motion. Our AI video generation transforms your concepts into seamless animations, adding a new dimension to your creative projects.                </p>
               </motion.div>
             </MouseTrackCard>
 
@@ -1215,7 +1207,7 @@ export default function LandingPage() {
               </div>
 
               <h2 className="text-3xl md:text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
-                Ready to Create with AI?
+              What Will You Create?
               </h2>
 
               <p className="text-lg text-foreground/80 mb-8 max-w-2xl mx-auto">

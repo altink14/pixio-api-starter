@@ -1,4 +1,8 @@
 // src/components/shared/navbar.tsx
+// NO CHANGES NEEDED HERE if you want all GradientButtons to be Pink/Purple/Orange
+// It should look like the version from the previous step where all GradientButtons
+// were already using the default variant.
+
 'use client';
 
 import Link from 'next/link';
@@ -7,7 +11,8 @@ import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button'; 
+import { GradientButton } from '@/components/ui/gradient-button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,7 +22,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { User } from '@/types/db_types';
-import { LogOut, Settings, User as UserIcon } from 'lucide-react';
+import { LogOut, Settings, LayoutDashboard, UserPlus, LogIn } from 'lucide-react';
 import { logout } from '@/lib/actions/auth.actions';
 import { CreditsDisplay } from '@/components/shared/credits-display';
 
@@ -27,115 +32,153 @@ export function Navbar() {
   const [loading, setLoading] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   
-  const isMarketing = pathname === '/' || pathname === '/pricing';
+  const isMarketingPage = pathname === '/' || pathname === '/pricing';
   
-  // Add scroll effect
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);
     };
-    
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
   
   useEffect(() => {
-    async function getUser() {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user) {
-        const { data } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-        
-        setUser(data);
-      }
-      
-      setLoading(false);
+    if (!document.documentElement.classList.contains('dark')) {
+        document.documentElement.classList.add('dark');
     }
-    
-    getUser();
   }, []);
   
+  useEffect(() => {
+    async function getUserData() {
+      const supabase = createClient();
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (authUser) {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', authUser.id)
+          .single();
+        setUser(userData as User | null);
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    }
+    getUserData();
+  }, []);
+
+  const navbarButtonStyles = "text-sm px-5 !py-2 min-w-[100px] sm:px-6 sm:!py-2.5 sm:min-w-[120px] !gap-1.5";
+  const dropdownButtonStyles = "w-full text-sm !py-2 !px-3 min-w-0 !gap-1.5";
+
   return (
     <nav className={cn(
-      "fixed top-0 left-0 right-0 z-50 py-4 transition-all duration-300",
-      scrolled || !isMarketing 
-        ? "bg-background/80 backdrop-blur-md border-b border-primary/10"
+      "fixed top-0 left-0 right-0 z-[100] py-3 transition-all duration-300",
+      scrolled || !isMarketingPage 
+        ? "bg-background/80 backdrop-blur-md border-b border-border"
         : "bg-transparent"
     )}>
       <div className="container flex items-center justify-between mx-auto">
         <Link href="/" className="flex items-center space-x-2">
           <span className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-accent">
-            Pixio<span className="font-bold">API</span>
+            Tini<span className="font-bold">Studio</span>
           </span>
         </Link>
         
-        <div className="flex items-center gap-4">
-          {isMarketing ? (
-            // Marketing navigation
+        <div className="flex items-center gap-3 sm:gap-4">
+          {isMarketingPage ? (
             <>
-              
-              {!loading && user ? (
+              {loading ? (
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className={`h-9 bg-muted/30 rounded-md animate-pulse ${navbarButtonStyles.split(' ')[2]}`}></div>
+                  <div className={`h-9 bg-muted/30 rounded-md animate-pulse ${navbarButtonStyles.split(' ')[4]}`}></div>
+                </div>
+              ) : user ? (
                 <Link href="/dashboard">
-                  <Button className="glass-button gradient-purple-pink">Dashboard</Button>
+                  <GradientButton className={navbarButtonStyles}> {/* Uses default (Pink/Purple/Orange) */}
+                    <LayoutDashboard className="size-4" /> Dashboard
+                  </GradientButton>
                 </Link>
               ) : (
                 <>
                   <Link href="/login">
-                    <Button variant="ghost" className="hover:bg-primary/10">Login</Button>
+                    <GradientButton className={navbarButtonStyles}> {/* Uses default (Pink/Purple/Orange) */}
+                      <LogIn className="size-4" /> Login
+                    </GradientButton> 
                   </Link>
                   <Link href="/signup">
-                    <Button className="glass-button gradient-purple-pink">Sign up</Button>
+                    <GradientButton className={navbarButtonStyles}> {/* Uses default (Pink/Purple/Orange) */}
+                      <UserPlus className="size-4" /> Sign up
+                    </GradientButton>
                   </Link>
                 </>
               )}
             </>
           ) : (
-            // Authenticated navigation
+            // Authenticated (in-app) navigation
             <>
               <Link href="/dashboard">
-                <Button variant="ghost" className="hover:bg-primary/10">Dashboard</Button>
+                <GradientButton className={navbarButtonStyles}> {/* Uses default (Pink/Purple/Orange) */}
+                  <LayoutDashboard className="size-4" /> Dashboard
+                </GradientButton>
               </Link>
               
-              {!loading && user && (
+              {loading ? (
+                 <div className="h-9 w-9 bg-muted/30 rounded-full animate-pulse"></div>
+              ) : user && (
                 <>
-                  {/* Add credits display with glassmorphic style */}
                   <CreditsDisplay />
-                  
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="relative h-8 w-8 rounded-full hover:bg-primary/10">
-                        <Avatar className="h-8 w-8 border border-primary/20">
+                      <Button variant="ghost" className="relative h-9 w-9 rounded-full hover:bg-primary/10 p-0">
+                        <Avatar className="h-9 w-9 border border-primary/20">
                           <AvatarImage src={user.avatar_url || ''} alt={user.full_name || 'User'} />
-                          <AvatarFallback className="bg-primary/10">{user.full_name?.[0] || 'U'}</AvatarFallback>
+                          <AvatarFallback className="bg-primary/10 text-sm">{user.full_name?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
                         </Avatar>
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="glass-card">
+                    <DropdownMenuContent align="end" className="glass-card w-56">
                       <div className="flex items-center justify-start gap-2 p-2">
-                        <div className="flex flex-col space-y-1 leading-none">
-                          {user.full_name && <p className="font-medium">{user.full_name}</p>}
+                        <Avatar className="h-9 w-9 border border-primary/20">
+                           <AvatarImage src={user.avatar_url || ''} alt={user.full_name || 'User'} />
+                           <AvatarFallback className="bg-primary/10 text-sm">{user.full_name?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col space-y-0.5 leading-none">
+                          {user.full_name && <p className="font-medium text-sm">{user.full_name}</p>}
+                          {user.email && <p className="text-xs text-muted-foreground truncate">{user.email}</p>}
                         </div>
                       </div>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link href="/account" className="w-full flex justify-between items-center hover:bg-primary/10">
-                          Account <Settings className="h-4 w-4" />
+                      <DropdownMenuItem asChild className="cursor-pointer !p-0">
+                        <Link href="/account" className="w-full flex justify-between items-center px-2 py-1.5 hover:bg-accent/10 rounded-md">
+                          Account Settings <Settings className="h-4 w-4 ml-2 text-muted-foreground" />
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
+                      <DropdownMenuItem asChild className="!p-0 mt-1">
                         <form action={logout} className="w-full">
-                          <button type="submit" className="w-full flex justify-between items-center">
-                            Logout <LogOut className="h-4 w-4" />
-                          </button>
+                          <GradientButton /* Uses default (Pink/Purple/Orange) */
+                            type="submit"
+                            className={cn(dropdownButtonStyles, "justify-between rounded-md")} 
+                          >
+                            Logout <LogOut className="h-4 w-4 text-muted-foreground" />
+                          </GradientButton>
                         </form>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
+                </>
+              )}
+              {!loading && !user && !isMarketingPage && (
+                <>
+                  <Link href="/login">
+                    <GradientButton className={navbarButtonStyles}> {/* Uses default (Pink/Purple/Orange) */}
+                      <LogIn className="size-4" /> Login
+                    </GradientButton>
+                  </Link>
+                  <Link href="/signup">
+                     <GradientButton className={navbarButtonStyles}> {/* Uses default (Pink/Purple/Orange) */}
+                       <UserPlus className="size-4" /> Sign up
+                     </GradientButton>
+                  </Link>
                 </>
               )}
             </>

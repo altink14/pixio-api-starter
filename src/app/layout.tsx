@@ -1,16 +1,19 @@
 // src/app/layout.tsx
-import '@/app/globals.css';
-import { Toaster } from 'sonner';
+import './globals.css';
+import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { siteMetadata } from '@/lib/config/metadata';
-import { Analytics } from '@vercel/analytics/next';
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { ThemeProvider } from '@/lib/themecontext'; // Import the ThemeProvider
+import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Analytics } from '@vercel/analytics/react';
+import { Navbar } from '@/components/shared/navbar';
+import { GalaxyBackground } from '@/components/ui/galaxy-background';
 
+// Your existing font configuration
 const inter = Inter({ subsets: ['latin'] });
 
-// Use the comprehensive metadata configuration
-export const metadata = siteMetadata;
+export const metadata: Metadata = {
+  title: 'PixioAPI - Create AI Images with Ease',
+  description: 'Generate stunning AI images with our easy-to-use API',
+};
 
 export default function RootLayout({
   children,
@@ -18,14 +21,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark">
       <body className={inter.className}>
-        <ThemeProvider> {/* Wrap children with ThemeProvider */}
+        {/* Add the galaxy background - positioned on the right side */}
+        <GalaxyBackground />
+        
+        {/* Your existing layout */}
+        <Navbar />
+        <main className="flex min-h-screen flex-col pt-20">
           {children}
-        </ThemeProvider>
+        </main>
+        
+        <SpeedInsights />
         <Analytics />
-        <SpeedInsights/>
-        <Toaster position="bottom-right" />
       </body>
     </html>
   );

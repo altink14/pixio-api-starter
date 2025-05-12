@@ -83,7 +83,7 @@
   /* Soft borders and inputs */
   --border: oklch(0.9 0.02 270 / 0.2);
   --input: oklch(0.9 0.02 270 / 0.2);
-  --ring: oklch(0.65 0.2 280 / 0.5);
+  --ring: oklch(0.65 0.2 280 / 0.5); /* This is your general ring color */
   
   /* Chart colors */
   --chart-1: oklch(0.65 0.2 280); /* Purple - #7068F4 */
@@ -138,9 +138,9 @@
   --destructive-foreground: oklch(0.1 0.02 0);
   
   /* Subtle glowing borders */
-  --border: oklch(0.65 0.15 280 / 0.15);
+  --border: oklch(0.65 0.15 280 / 0.15); /* Your general border in dark mode */
   --input: oklch(0.65 0.15 280 / 0.2);
-  --ring: oklch(0.7 0.2 280 / 0.5);
+  --ring: oklch(0.7 0.2 280 / 0.5); /* Your general ring color in dark mode */
   
   /* Dark mode chart colors - brighter for contrast */
   --chart-1: oklch(0.7 0.22 280); /* Brighter purple */
@@ -161,11 +161,119 @@
 }
 
 @layer base {
+  /* === START: Added @property definitions === */
+  @property --pos-x {
+    syntax: '<percentage>';
+    initial-value: 11.14%;
+    inherits: false;
+  }
+
+  @property --pos-y {
+    syntax: '<percentage>';
+    initial-value: 140%;
+    inherits: false;
+  }
+
+  @property --spread-x {
+    syntax: '<percentage>';
+    initial-value: 150%;
+    inherits: false;
+  }
+
+  @property --spread-y {
+    syntax: '<percentage>';
+    initial-value: 180.06%;
+    inherits: false;
+  }
+
+  @property --color-1 {
+    syntax: '<color>';
+    initial-value: #000; /* Note: These initial colors might be very dark on your dark theme. */
+    inherits: false;     /* You might want to adjust initial values for better visibility. */
+  }
+
+  @property --color-2 {
+    syntax: '<color>';
+    initial-value: #08012c;
+    inherits: false;
+  }
+
+  @property --color-3 {
+    syntax: '<color>';
+    initial-value: #4e1e40;
+    inherits: false;
+  }
+
+  @property --color-4 {
+    syntax: '<color>';
+    initial-value: #70464e;
+    inherits: false;
+  }
+
+  @property --color-5 {
+    syntax: '<color>';
+    initial-value: #88394c;
+    inherits: false;
+  }
+
+  @property --border-angle {
+    syntax: '<angle>';
+    initial-value: 20deg;
+    inherits: true;
+  }
+
+  @property --border-color-1 {
+    syntax: '<color>';
+    /* Adjusted initial border colors for better visibility on dark theme using your theme vars */
+    initial-value: oklch(var(--primary) / 0.2); /* Example: hsla(340, 75%, 60%, 0.2); */
+    inherits: true;
+  }
+
+  @property --border-color-2 {
+    syntax: '<color>';
+    initial-value: oklch(var(--secondary) / 0.75); /* Example: hsla(340, 75%, 40%, 0.75); */
+    inherits: true;
+  }
+
+  @property --stop-1 {
+    syntax: '<percentage>';
+    initial-value: 37.35%;
+    inherits: false;
+  }
+
+  @property --stop-2 {
+    syntax: '<percentage>';
+    initial-value: 61.36%;
+    inherits: false;
+  }
+
+  @property --stop-3 {
+    syntax: '<percentage>';
+    initial-value: 78.42%;
+    inherits: false;
+  }
+
+  @property --stop-4 {
+    syntax: '<percentage>';
+    initial-value: 89.52%;
+    inherits: false;
+  }
+
+  @property --stop-5 {
+    syntax: '<percentage>';
+    initial-value: 100%;
+    inherits: false;
+  }
+  /* === END: Added @property definitions === */
+
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring/50; /* ring/50 might not be defined, check your ring color setup */
+                                         /* Consider `outline-offset-2 outline-1 outline-[var(--ring)]` for better focus rings */
   }
   body {
-    @apply bg-background text-foreground bg-gradient-to-br from-primary/5 via-background to-secondary/5;
+    @apply bg-background text-foreground; /* Removed extra gradient on body as AnimatedBackground handles it */
+                                         /* Original: bg-gradient-to-br from-primary/5 via-background to-secondary/5; */
+    font-family: var(--font-sans); /* Explicitly set font-family */
   }
   
   /* Modern typography */
@@ -188,44 +296,151 @@
 
 /* Glassmorphic and futuristic design utility classes */
 @layer components {
+  /* === START: Added .gradient-button styles === */
+  .gradient-button {
+    @apply relative appearance-none cursor-pointer;
+    /* The background is now fully defined by CSS custom properties */
+    background: radial-gradient(
+      var(--spread-x) var(--spread-y) at var(--pos-x) var(--pos-y),
+      var(--color-1) var(--stop-1),
+      var(--color-2) var(--stop-2),
+      var(--color-3) var(--stop-3),
+      var(--color-4) var(--stop-4),
+      var(--color-5) var(--stop-5)
+    );
+    /* Ensure all custom properties used in the gradient and border are transitioned */
+    transition:
+      --pos-x 0.5s, --pos-y 0.5s,
+      --spread-x 0.5s, --spread-y 0.5s,
+      --color-1 0.5s, --color-2 0.5s, --color-3 0.5s, --color-4 0.5s, --color-5 0.5s,
+      --border-angle 0.5s,
+      --border-color-1 0.5s, --border-color-2 0.5s,
+      --stop-1 0.5s, --stop-2 0.5s, --stop-3 0.5s, --stop-4 0.5s, --stop-5 0.5s;
+  }
+
+  .gradient-button::before {
+    content: '';
+    position: absolute;
+    inset: 0; /* Covers the entire button area */
+    border-radius: inherit; /* Inherits border-radius from .gradient-button */
+    padding: 1px; /* Creates space for the "border" to be visible */
+    background: linear-gradient(
+      var(--border-angle),
+      var(--border-color-1),
+      var(--border-color-2)
+    );
+    -webkit-mask: 
+      linear-gradient(#fff 0 0) content-box, /* Mask for the content area */
+      linear-gradient(#fff 0 0); /* Mask for the padding area (border) */
+    -webkit-mask-composite: xor; /* For older Safari, equivalent to 'exclude' */
+            mask-composite: exclude; /* Standard property, punches out the content area */
+    pointer-events: none; /* Ensures the pseudo-element doesn't interfere with clicks */
+  }
+
+  /* Default hover state for .gradient-button */
+  .gradient-button:hover {
+    --pos-x: 0%;
+    --pos-y: 91.51%;
+    --spread-x: 120.24%;
+    --spread-y: 103.18%;
+    --color-1: #c96287;
+    --color-2: #c66c64;
+    --color-3: #cc7d23;
+    --color-4: #37140a;
+    --color-5: #000; /* This might be too dark on your dark theme for hover */
+    --border-angle: 190deg;
+    --border-color-1: oklch(var(--primary) / 0.3); /* hsla(340, 78%, 90%, 0.1); */
+    --border-color-2: oklch(var(--secondary) / 0.8); /* hsla(340, 75%, 90%, 0.6); */
+    --stop-1: 0%;
+    --stop-2: 8.8%;
+    --stop-3: 21.44%;
+    --stop-4: 71.34%;
+    --stop-5: 85.76%;
+  }
+
+  /* Variant styles */
+  .gradient-button-variant {
+    /* Override initial values for the "variant" button */
+    --color-1: #000022; /* Again, check visibility on dark theme */
+    --color-2: #1f3f6d;
+    --color-3: #469396;
+    --color-4: #f1ffa5; /* This one is light, good contrast */
+    /* --color-5 is inherited from .gradient-button or its initial @property value if not overridden */
+    --border-angle: 200deg;
+    --border-color-1: oklch(var(--accent) / 0.6);   /* hsla(320, 75%, 90%, 0.6); */
+    --border-color-2: oklch(var(--primary) / 0.15); /* hsla(320, 50%, 90%, 0.15); */
+  }
+
+  .gradient-button-variant:hover {
+    /* Override hover values for the "variant" button */
+    --pos-x: 0%;
+    --pos-y: 95.51%;
+    --spread-x: 110.24%;
+    --spread-y: 110.2%;
+    --color-1: #000020;
+    --color-2: #f1ffa5;
+    --color-3: #469396;
+    --color-4: #1f3f6d;
+    --color-5: #000; /* Check visibility */
+    --stop-1: 0%;
+    --stop-2: 10%;
+    --stop-3: 35.44%;
+    --stop-4: 71.34%;
+    --stop-5: 90.76%;
+    --border-angle: 210deg;
+    --border-color-1: oklch(var(--accent) / 0.2);   /* hsla(320, 75%, 90%, 0.2); */
+    --border-color-2: oklch(var(--secondary) / 0.75); /* hsla(320, 50%, 90%, 0.75); */
+  }
+  /* === END: Added .gradient-button styles === */
+
   .glass-card {
-    @apply rounded-xl bg-white/20 dark:bg-black/20 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-lg hover:shadow-xl transition-shadow;
+    @apply rounded-xl bg-card backdrop-blur-md border border-border shadow-lg hover:shadow-xl transition-shadow;
+    /* Using theme variables for card background and border */
   }
   
   .glass-input {
-    @apply bg-white/10 dark:bg-white/5 backdrop-blur-sm border border-white/20 dark:border-white/10;
+    @apply bg-input backdrop-blur-sm border border-border;
+    /* Using theme variables */
   }
   
-  .glass-button {
+  .glass-button { /* This is a general utility, not the new GradientButton */
     @apply backdrop-blur-sm hover:shadow-lg transition-all shadow-md;
   }
   
+  /* These simple gradients can still be useful for other elements */
   .gradient-purple-pink {
-    @apply bg-gradient-to-r from-primary to-secondary text-primary-foreground;
+    background-image: linear-gradient(to right, var(--primary), var(--secondary));
+    color: var(--primary-foreground); /* Or appropriate foreground for the gradient */
   }
   
   .gradient-pink-orange {
-    @apply bg-gradient-to-r from-secondary to-accent text-secondary-foreground;
+    background-image: linear-gradient(to right, var(--secondary), var(--accent));
+    color: var(--secondary-foreground);
   }
   
   .gradient-purple-orange {
-    @apply bg-gradient-to-r from-primary to-accent text-primary-foreground;
+    background-image: linear-gradient(to right, var(--primary), var(--accent));
+    color: var(--primary-foreground);
   }
   
   .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-accent;
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(to right, var(--primary), var(--secondary), var(--accent));
   }
   
+  /* .gradient-border - this complex border might be superseded by the ::before on .gradient-button */
+  /* If you still need it for other elements: */
   .gradient-border {
-    @apply border border-transparent bg-gradient-to-r from-primary/30 via-secondary/30 to-accent/30 bg-origin-border;
-    -webkit-mask: 
-      linear-gradient(#fff 0 0) padding-box, 
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
+    border: 1px solid transparent; /* Ensure border width is set */
+    background-image: linear-gradient(var(--background), var(--background)), 
+                      linear-gradient(to right, oklch(var(--primary)/0.3), oklch(var(--secondary)/0.3), oklch(var(--accent)/0.3));
+    background-origin: border-box;
+    background-clip: content-box, border-box;
+    -webkit-mask-composite: xor; /* For Safari */
+            mask-composite: exclude; /* Standard */
   }
   
-  .glass-bg {
+  .glass-bg { /* This seems to be the same as body background */
     @apply bg-gradient-to-br from-primary/5 via-background to-secondary/5;
   }
   
@@ -234,7 +449,7 @@
   }
   
   .futuristic-border {
-    @apply border border-white/20 dark:border-white/10 rounded-xl overflow-hidden;
+    @apply border border-border rounded-xl overflow-hidden;
   }
   
   .glow {
@@ -243,28 +458,28 @@
   
   .glow::after {
     @apply content-[''] absolute -inset-0.5 rounded-[inherit] z-[-1] opacity-75 pointer-events-none blur-md;
-    background: linear-gradient(35deg, #7068F4, transparent, #FF64B4, transparent, #ffac4c);
+    background: linear-gradient(35deg, var(--primary), transparent, var(--secondary), transparent, var(--accent));
     animation: shimmer 10s ease-in-out infinite;
     background-size: 200% 200%;
   }
   
   .glow-purple::after {
-    background: linear-gradient(35deg, #7068F4, rgba(112, 104, 244, 0.5), transparent);
+    background: linear-gradient(35deg, var(--primary), oklch(var(--primary) / 0.5), transparent);
   }
   
   .glow-pink::after {
-    background: linear-gradient(35deg, #FF64B4, rgba(255, 100, 180, 0.5), transparent);
+    background: linear-gradient(35deg, var(--secondary), oklch(var(--secondary) / 0.5), transparent);
   }
   
   .glow-orange::after {
-    background: linear-gradient(35deg, #ffac4c, rgba(255, 172, 76, 0.5), transparent);
+    background: linear-gradient(35deg, var(--accent), oklch(var(--accent) / 0.5), transparent);
   }
   
   .interactive-card {
     @apply transition-all duration-300 hover:translate-y-[-5px] hover:shadow-lg;
   }
   
-  .shimmer {
+  .shimmer { /* General shimmer effect */
     @apply relative overflow-hidden;
   }
   
@@ -272,16 +487,16 @@
     @apply content-[''] absolute inset-0 z-10;
     background: linear-gradient(90deg, 
       transparent, 
-      rgba(255, 255, 255, 0.1), 
+      oklch(var(--foreground) / 0.05), /* Adjusted for theme foreground */
       transparent
     );
     background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
+    animation: shimmer-anim 1.5s infinite; /* Renamed keyframes to avoid conflict if 'shimmer' is used elsewhere for other things */
   }
 }
 
 /* Animation keyframes */
-@keyframes shimmer {
+@keyframes shimmer-anim { /* Renamed from 'shimmer' */
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
@@ -294,4 +509,17 @@
 @keyframes pulse-glow {
   0%, 100% { opacity: 0.6; }
   50% { opacity: 1; }
+}
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.pixio-gradient {
+  background: linear-gradient(to right, #7068F4, #FF64B4, #ffac4c);
+  background-size: 200% 200%;
+  animation: gradientMove 15s ease infinite;
+  -webkit-background-clip: text;
+  background-clip: text;
 }
