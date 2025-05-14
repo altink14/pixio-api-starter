@@ -1,35 +1,36 @@
-// src/app/(app)/layout.tsx
-import { Navbar } from '@/components/shared/navbar';
-import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
+// src/app/layout.tsx
+import './globals.css';
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Analytics } from '@vercel/analytics/react';
+import { OptimizedGalaxyBackground } from '@/components/ui/galaxy-background';
 
-export default async function AppLayout({
+// Your existing font configuration
+const inter = Inter({ subsets: ['latin'] });
+
+export const metadata: Metadata = {
+  title: 'PixioAPI - Create AI Images with Ease',
+  description: 'Generate stunning AI images with our easy-to-use API',
+};
+
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect('/login');
-  }
-
   return (
-    <div className="flex min-h-screen flex-col relative overflow-hidden"> {/* Added relative and overflow-hidden */}
-      {/* Background Gradient (Optional - you might already have one on body or main) */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/5 via-background to-secondary/5" />
-
-      {/* Grid pattern */}
-      <div className="absolute inset-0 -z-10 bg-[url('/grid.svg')] bg-[length:10px_10px] bg-repeat opacity-5"></div>
-
-      {/* Navbar (ensure it has a background or backdrop-blur if needed) */}
-      <Navbar />
-
-      {/* Main Content Area */}
-      <main className="flex-1 pt-16 pb-8 z-10"> {/* Added z-10 to ensure content is above background */}
+    <html lang="en" className="dark">
+      <body className={inter.className}>
+        {/* Add the galaxy background as a global element */}
+        <OptimizedGalaxyBackground />
+        
+        {/* The children will be the route group layouts */}
         {children}
-      </main>
-    </div>
+        
+        <SpeedInsights />
+        <Analytics />
+      </body>
+    </html>
   );
 }

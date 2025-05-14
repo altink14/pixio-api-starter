@@ -11,7 +11,7 @@ import { OptimizedGalaxyBackground } from '@/components/ui/galaxy-background';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'PixioAPI - Create AI Images with Ease',
+  title: 'Tini Studio - Create AI Images with Ease',
   description: 'Generate stunning AI images with our easy-to-use API',
 };
 
