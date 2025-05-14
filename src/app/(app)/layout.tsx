@@ -1,5 +1,4 @@
 // src/app/layout.tsx
-import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { SpeedInsights } from '@vercel/speed-insights/next';
@@ -10,7 +9,7 @@ import { OptimizedGalaxyBackground } from '@/components/ui/galaxy-background';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'PixioAPI - Create AI Images with Ease',
+  title: 'Tini Studio - Create AI Images with Ease',
   description: 'Generate stunning AI images with our easy-to-use API',
 };
 
