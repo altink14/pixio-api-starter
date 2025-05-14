@@ -1,5 +1,3 @@
-// src/app/(marketing)/page.tsx
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -25,6 +23,7 @@ import { Subscription } from '@/types/db_types';
 import { Footer } from '@/components/shared/footer';
 import { TextPressure } from '@/components/ui/text-pressure';
 import { GradientTextPressure } from '@/components/ui/gradient-text-pressure';
+import { OptimizedGalaxyBackground as GalaxyBackground } from '@/components/ui/optimized-galaxy-background';
 
 // Define prop types for components
 interface WorkflowCardProps {

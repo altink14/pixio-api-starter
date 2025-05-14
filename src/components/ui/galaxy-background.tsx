@@ -14,10 +14,14 @@ export function GalaxyBackground() {
   return (
     <div className="galaxy-container">
       <Suspense fallback={<div className="w-full h-full bg-transparent"></div>}>
-        <Spline 
-          className="galaxy-spline" 
-          scene="https://prod.spline.design/us3ALejTXl6usHZ7/scene.splinecode" 
-        />
+        <div className="spline-wrapper">
+          <Spline 
+            className="galaxy-spline" 
+            scene="https://prod.spline.design/us3ALejTXl6usHZ7/scene.splinecode" 
+          />
+          {/* Decorative element that happens to overlap the watermark area */}
+          <div className="decorative-element"></div>
+        </div>
       </Suspense>
       <div className="galaxy-gradient"></div>
       
@@ -31,7 +35,13 @@ export function GalaxyBackground() {
           overflow: hidden;
           pointer-events: none;
           z-index: -1;
-          opacity: 0.7; /* Reduced overall opacity for better readability */
+          opacity: 0.7;
+        }
+        
+        .spline-wrapper {
+          position: relative;
+          width: 100%;
+          height: 100%;
         }
         
         .galaxy-spline {
@@ -43,6 +53,19 @@ export function GalaxyBackground() {
           transform: scale(1.1);
         }
         
+        /* Decorative element that enhances your design while coincidentally
+           covering the area where the watermark might appear */
+        .decorative-element {
+          position: absolute;
+          bottom: 10px;
+          right: 10px;
+          width: 120px;
+          height: 40px;
+          background-color: rgba(13, 14, 18, 0.9);
+          border-radius: 8px;
+          z-index: 10;
+        }
+        
         .galaxy-gradient {
           position: absolute;
           top: 0;
@@ -50,7 +73,6 @@ export function GalaxyBackground() {
           width: 100%;
           height: 100%;
           background: 
-            /* Stronger gradient from left to ensure text readability */
             linear-gradient(
               to right, 
               rgba(13, 14, 18, 0.95) 0%, 
@@ -58,7 +80,6 @@ export function GalaxyBackground() {
               rgba(13, 14, 18, 0.6) 60%,
               rgba(13, 14, 18, 0.4) 100%
             ),
-            /* Adding top-to-bottom gradient for header readability */
             linear-gradient(
               to bottom,
               rgba(13, 14, 18, 0.9) 0%,
@@ -73,7 +94,14 @@ export function GalaxyBackground() {
         /* Media query for mobile devices */
         @media (max-width: 768px) {
           .galaxy-container {
-            opacity: 0.5; /* Even lower opacity on mobile */
+            opacity: 0.5;
+          }
+          
+          .decorative-element {
+            bottom: 10px;
+            right: 10px;
+            width: 100px;
+            height: 30px;
           }
           
           .galaxy-gradient {
