@@ -5,7 +5,7 @@ import { Inter } from 'next/font/google';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/react';
 import { Navbar } from '@/components/shared/navbar';
-import { GalaxyBackground } from '@/components/ui/galaxy-background';
+import { OptimizedGalaxyBackground } from '@/components/ui/galaxy-background';
 
 // Your existing font configuration
 const inter = Inter({ subsets: ['latin'] });
@@ -24,7 +24,7 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={inter.className}>
         {/* Add the galaxy background - positioned on the right side */}
-        <GalaxyBackground />
+        <OptimizedGalaxyBackground />  {/* <- Change to match the import */}
         
         {/* Your existing layout */}
         <Navbar />
