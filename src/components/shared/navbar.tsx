@@ -156,7 +156,7 @@ export function Navbar() {
                         </Avatar>
                         <div className="flex flex-col space-y-0.5 leading-none">
                           {user.full_name && <p className="font-medium text-sm">{user.full_name}</p>}
-                          {user.email && <p className="text-xs text-muted-foreground truncate">{user.email}</p>}
+                          {typeof user.email === 'string' && <p className="text-xs text-muted-foreground truncate">{user.email}</p>}
                         </div>
                       </div>
                       <DropdownMenuSeparator />
