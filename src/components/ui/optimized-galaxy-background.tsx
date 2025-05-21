@@ -6,7 +6,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { PointMaterial, AdaptiveDpr } from '@react-three/drei';
 import * as THREE from 'three';
 
-function Galaxy({ isMobile }) {
+function Galaxy({ isMobile }: { isMobile: boolean }) {
   const points = useRef<THREE.Points>(null);
   
   // Galaxy parameters - fewer particles for mobile
@@ -55,7 +55,7 @@ function Galaxy({ isMobile }) {
     }
     
     return { positions, colors };
-  }, [particlesCount, galaxyRadius, branches, spin, randomness, randomnessPower, insideColor, outsideColor, isMobile]);
+  }, [particlesCount, galaxyRadius, branches, spin, randomness, randomnessPower, insideColor, outsideColor]);
   
   // Animation - slower rotation on mobile for better performance
   useFrame(() => {
@@ -73,12 +73,14 @@ function Galaxy({ isMobile }) {
           count={particlesCount}
           array={positions}
           itemSize={3}
+          args={[positions, 3]}
         />
         <bufferAttribute
           attach="attributes-color"
           count={particlesCount}
           array={colors}
           itemSize={3}
+          args={[colors, 3]}
         />
       </bufferGeometry>
       <PointMaterial

@@ -1,3 +1,4 @@
+// src/components/ui/fiber-galaxy-background.tsx
 "use client";
 
 import React, { useRef, useMemo } from 'react';

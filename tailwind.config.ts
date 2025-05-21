@@ -118,6 +118,27 @@ const config: Config = {
           '0%, 100%': { boxShadow: '0 0 15px 0 rgba(112, 104, 244, 0.4)' },
           '50%': { boxShadow: '0 0 30px 5px rgba(112, 104, 244, 0.7)' },
         },
+        // Add new cosmic background keyframes
+        'float-slow': {
+          '0%, 100%': { transform: 'translate(0, 0) rotate(0deg)' },
+          '33%': { transform: 'translate(1%, 1%) rotate(1deg)' },
+          '66%': { transform: 'translate(-1%, 2%) rotate(-1deg)' },
+        },
+        'cosmic-pulse': {
+          '0%, 100%': { opacity: '0.3', transform: 'scale(1)' },
+          '50%': { opacity: '0.7', transform: 'scale(1.05)' },
+        },
+        'cosmic-drift': {
+          '0%': { transform: 'rotate(0deg) translate(0, 0)' },
+          '25%': { transform: 'rotate(1deg) translate(2%, 1%)' },
+          '50%': { transform: 'rotate(0deg) translate(0, 2%)' },
+          '75%': { transform: 'rotate(-1deg) translate(-2%, 1%)' },
+          '100%': { transform: 'rotate(0deg) translate(0, 0)' },
+        },
+        'star-twinkle': {
+          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+          '50%': { opacity: '0.5', transform: 'scale(0.8)' },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -127,17 +148,37 @@ const config: Config = {
         "shimmer": "shimmer 8s ease-in-out infinite",
         "pulse": "pulse 3s ease-in-out infinite",
         "glow": "glow 4s ease-in-out infinite",
+        // Add new cosmic background animations
+        "float-slow": "float-slow 120s ease-in-out infinite",
+        "cosmic-pulse": "cosmic-pulse 8s ease-in-out infinite",
+        "cosmic-drift": "cosmic-drift 30s ease-in-out infinite",
+        "star-twinkle": "star-twinkle 4s ease-in-out infinite",
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic': 'conic-gradient(from 0deg at 50% 50%, var(--tw-gradient-stops))',
         'gradient-glass': 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))',
+        // Add new cosmic background gradients
+        'nebula-purple': 'radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, rgba(91, 33, 182, 0.05) 50%, transparent 70%)',
+        'nebula-blue': 'radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.05) 50%, transparent 70%)',
+        'nebula-pink': 'radial-gradient(circle, rgba(236, 72, 153, 0.15) 0%, rgba(219, 39, 119, 0.05) 50%, transparent 70%)',
+        'aurora': 'linear-gradient(180deg, rgba(139, 92, 246, 0.2) 0%, rgba(59, 130, 246, 0.1) 50%, transparent 100%)',
       },
       backdropBlur: {
         xs: '2px',
       },
+      // Add new utilities for cosmic effects
+      transitionTimingFunction: {
+        'cosmic': 'cubic-bezier(0.11, 0, 0.5, 0)',
+      },
+      boxShadow: {
+        'star': '0 0 10px 2px rgba(255, 255, 255, 0.7)',
+        'star-lg': '0 0 20px 5px rgba(255, 255, 255, 0.9)',
+        'nebula': '0 0 80px 30px rgba(139, 92, 246, 0.2)',
+      },
     },
   },
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   plugins: [require("tailwindcss-animate")],
 };
 

@@ -6,6 +6,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -79,10 +80,21 @@ export function Navbar() {
     )}>
       <div className="container flex items-center justify-between mx-auto">
         <Link href="/" className="flex items-center space-x-2">
-          <span className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-accent">
-            Tini<span className="font-bold">Studio</span>
-          </span>
-        </Link>
+  <div className="relative flex items-center justify-center h-16"> {/* Added flex alignment */}
+    <Image 
+      src="/metadata/logo.png" 
+      alt="Logo" 
+      width={280}
+      height={64}
+      className="w-auto max-h-16" 
+      style={{ 
+        objectFit: "contain",
+        transform: "translateY(2px)" // Fine-tune vertical position
+      }}
+      priority
+    />
+  </div>
+</Link>
         
         <div className="flex items-center gap-3 sm:gap-4">
           {isMarketingPage ? (

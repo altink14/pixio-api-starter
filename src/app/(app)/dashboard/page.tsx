@@ -41,7 +41,7 @@ export default async function DashboardPage() {
           Welcome back, {profile?.full_name?.split(' ')[0] || 'Creator'}!
         </h1>
         <p className="text-xl text-muted-foreground">
-          Let's create something amazing with AI.
+          Let&apos;s create something amazing with AI.
         </p>
       </div>
 

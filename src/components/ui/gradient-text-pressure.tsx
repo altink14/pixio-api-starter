@@ -11,7 +11,7 @@ export function GradientTextPressure({
 }: { 
   text: string;
   className?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }) {
   const [mounted, setMounted] = useState(false);
 
