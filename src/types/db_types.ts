@@ -177,7 +177,7 @@ export interface Database {
       }
       users: {
         Row: {
-          [x: string]: any
+          [x: string]: unknown
           avatar_url: string | null
           billing_address: Json | null
           full_name: string | null
