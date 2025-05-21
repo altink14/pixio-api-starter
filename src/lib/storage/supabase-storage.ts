@@ -44,11 +44,11 @@ export async function uploadFile(
       path: storagePath,
       url: publicUrlData.publicUrl
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('File upload error:', error);
     return {
       success: false,
-      error: error.message
+      error: error instanceof Error ? error.message : String(error)
     };
   }
 }
@@ -106,11 +106,11 @@ export async function uploadGenerationInputImage(
       success: true,
       url: publicUrlData.publicUrl
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`Error uploading input image (${type}):`, error);
     return {
       success: false,
-      error: error.message
+      error: error instanceof Error ? error.message : String(error)
     };
   }
 }
@@ -129,10 +129,10 @@ export async function deleteFile(path: string): Promise<{ success: boolean; erro
     }
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return {
       success: false,
-      error: error.message
+      error: error instanceof Error ? error.message : String(error)
     };
   }
 }
@@ -171,10 +171,10 @@ export async function listUserFiles(userId: string, mediaType?: MediaType | 'inp
     }).filter(file => file.publicUrl); // Filter out files where URL couldn't be generated
 
     return { success: true, files: filesWithUrls || [] };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return {
       success: false,
-      error: error.message,
+      error: error instanceof Error ? error.message : String(error),
       files: []
     };
   }

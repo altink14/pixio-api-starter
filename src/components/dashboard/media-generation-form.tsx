@@ -75,11 +75,17 @@ async function uploadDirectlyToSupabase(
 
         return { success: true, url: publicUrlData.publicUrl };
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error(`Error in uploadDirectlyToSupabase (${type}):`, error);
         // toast.dismiss(); // Ensure any related toasts are dismissed
+        let errorMessage = "Unknown error";
+        if (error instanceof Error) {
+            errorMessage = error.message;
+        } else if (typeof error === "string") {
+            errorMessage = error;
+        }
         toast.error(`Failed to upload ${type} image.`);
-        return { success: false, error: error.message };
+        return { success: false, error: errorMessage };
     }
 }
 
@@ -319,9 +325,15 @@ export function MediaGenerationForm({
         setPollingMediaId(result.mediaId); // This will trigger the useEffect to start polling
         if (onGenerationStart) onGenerationStart(result.mediaId);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`Submission error:`, error);
-      toast.error(error.message || 'An unexpected error occurred during submission.');
+      let errorMessage = 'An unexpected error occurred during submission.';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      toast.error(errorMessage);
       setPreviewStatus('failed');
       setIsPolling(false); // Ensure polling is off on error
       setPollingMediaId(null); // Clear polling ID on error

@@ -21,10 +21,31 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 interface StripeSubscription {
   id: string;
   status: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   items: {
     data: Array<{
-      price: { id: string };
+      price: {
+        id: string;
+        product: {
+          id: string;
+          active: boolean;
+          name: string;
+          description: string | null;
+          images?: string[];
+          metadata: Record<string, unknown>;
+        };
+        active: boolean;
+        currency: string;
+        nickname?: string | null;
+        type: string;
+        unit_amount?: number | null;
+        recurring?: {
+          interval: string;
+          interval_count: number;
+          trial_period_days?: number | null;
+        } | null;
+        metadata: Record<string, unknown>;
+      };
       quantity: number;
     }>;
   };
@@ -77,18 +98,18 @@ export async function createOrRetrieveCustomer({
 
 // Upsert product record in the database
 export async function upsertProductRecord(product: Stripe.Product) {
+  const productToInsert = {
+    id: product.id,
+    active: product.active,
+    name: product.name,
+    description: product.description ?? null,
+    image: product.images?.[0] ?? null,
+    metadata: product.metadata,
+  };
+
   const { error } = await supabaseAdmin
     .from('products')
-    .upsert([
-      {
-        id: product.id,
-        active: product.active,
-        name: product.name,
-        description: product.description ?? null,
-        image: product.images?.[0] ?? null,
-        metadata: product.metadata,
-      },
-    ]);
+    .upsert([productToInsert] as Database['public']['Tables']['products']['Insert'][]);
   
   if (error) throw error;
   console.log(`Product inserted/updated: ${product.id}`);
@@ -114,23 +135,23 @@ export async function upsertPriceRecord(price: Stripe.Price) {
   // Extract price type
   const type = price.type as Database['public']['Enums']['pricing_type'];
   
+  const priceToInsert = {
+    id: price.id,
+    product_id: typeof price.product === 'string' ? price.product : '',
+    active: price.active,
+    currency: price.currency,
+    description: price.nickname ?? null,
+    type,
+    unit_amount: price.unit_amount ?? null,
+    interval,
+    interval_count: intervalCount,
+    trial_period_days: price.recurring?.trial_period_days ?? null,
+    metadata: price.metadata,
+  };
+
   const { error } = await supabaseAdmin
     .from('prices')
-    .upsert([
-      {
-        id: price.id,
-        product_id: typeof price.product === 'string' ? price.product : '',
-        active: price.active,
-        currency: price.currency,
-        description: price.nickname ?? null,
-        type,
-        unit_amount: price.unit_amount ?? null,
-        interval,
-        interval_count: intervalCount,
-        trial_period_days: price.recurring?.trial_period_days ?? null,
-        metadata: price.metadata,
-      },
-    ]);
+    .upsert([priceToInsert] as Database['public']['Tables']['prices']['Insert'][]);
   
   if (error) throw error;
   console.log(`Price inserted/updated: ${price.id}`);
@@ -173,8 +194,8 @@ export async function manageSubscriptionStatusChange(
       expand: ['default_payment_method', 'items.data.price', 'items.data.price.product'],
     });
 
-    // Handle as plain object to avoid TypeScript issues
-    const subscription = stripeSubscription as any;
+    // Cast to StripeSubscription type to avoid 'any'
+    const subscription = stripeSubscription as unknown as StripeSubscription;
 
     // Get the price and product details from the subscription
     const priceId = subscription.items.data[0].price.id;
@@ -202,35 +223,39 @@ export async function manageSubscriptionStatusChange(
       // Insert product if it doesn't exist
       if (!existingProduct) {
         console.log(`Product ${product.id} not found. Adding product...`);
+        const productToInsert = {
+          id: product.id,
+          active: product.active,
+          name: product.name,
+          description: product.description ?? null,
+          image: product.images?.[0] ?? null,
+          metadata: product.metadata as unknown as Database['public']['Tables']['products']['Insert']['metadata'],
+        };
+
         await supabaseAdmin
           .from('products')
-          .upsert([{
-            id: product.id,
-            active: product.active,
-            name: product.name,
-            description: product.description ?? null,
-            image: product.images?.[0] ?? null,
-            metadata: product.metadata,
-          }]);
+          .upsert([productToInsert] as Database['public']['Tables']['products']['Insert'][]);
       }
       
       // Then insert the price
       console.log(`Adding price ${priceId}...`);
+      const priceToInsert = {
+        id: priceId,
+        product_id: product.id,
+        active: price.active,
+        currency: price.currency,
+        description: price.nickname ?? null,
+        type: price.type,
+        unit_amount: price.unit_amount ?? null,
+        interval: price.recurring?.interval ?? null,
+        interval_count: price.recurring?.interval_count ?? null,
+        trial_period_days: price.recurring?.trial_period_days ?? null,
+        metadata: price.metadata,
+      };
+
       await supabaseAdmin
         .from('prices')
-        .upsert([{
-          id: priceId,
-          product_id: product.id,
-          active: price.active,
-          currency: price.currency,
-          description: price.nickname ?? null,
-          type: price.type,
-          unit_amount: price.unit_amount ?? null,
-          interval: price.recurring?.interval ?? null,
-          interval_count: price.recurring?.interval_count ?? null,
-          trial_period_days: price.recurring?.trial_period_days ?? null,
-          metadata: price.metadata,
-        }]);
+        .upsert([priceToInsert] as Database['public']['Tables']['prices']['Insert'][]);
     }
     
     // Define helper function inline
@@ -247,7 +272,7 @@ export async function manageSubscriptionStatusChange(
     // Current time as fallback
     const now = new Date().toISOString();
     
-    // Upsert the subscription in the database
+    // Define the subscription data
     const subscriptionData = {
       id: subscription.id,
       user_id: uuid,
@@ -268,9 +293,10 @@ export async function manageSubscriptionStatusChange(
 
     console.log(`Upserting subscription ${subscription.id} for user ${uuid}`);
     
+    // Use correct type assertion for subscriptions insert
     const { error } = await supabaseAdmin
       .from('subscriptions')
-      .upsert([subscriptionData]);
+      .upsert([subscriptionData] as Database['public']['Tables']['subscriptions']['Insert'][]);
 
     if (error) {
       console.error(`Supabase subscription upsert error:`, error);

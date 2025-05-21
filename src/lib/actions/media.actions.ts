@@ -2,24 +2,17 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { useCredits } from '@/lib/credits';
+// Import getUserCredits without parameters
+import { getUserCredits } from '@/lib/credits';
 import { revalidatePath } from 'next/cache';
-// Import the service function, NOT the action itself recursively
 import { checkGenerationStatus as checkGenerationStatusService } from '@/lib/services/media.service';
 import { MediaType, CREDIT_COSTS, GenerationResult, GenerationMode } from '@/lib/constants/media';
-// Import the specific Insert type and GeneratedMedia type
 import { Database, GeneratedMedia } from '@/types/db_types';
 import { supabaseAdmin } from '@/lib/supabase/admin';
-// Import only the necessary storage service functions (used by actions below)
 import { listUserFiles as listUserFilesService, deleteFile as deleteFileService } from '@/lib/storage/supabase-storage';
 
-// Define the specific type for insertion, derived from db_types.ts
 type GeneratedMediaInsert = Database['public']['Tables']['generated_media']['Insert'];
 
-/**
- * Initiates media generation by creating a record and invoking the Supabase Function.
- * Expects image URLs for modes that require input images (client handles upload).
- */
 export async function generateMedia(formData: FormData): Promise<{
   success: boolean;
   mediaId?: string;
@@ -35,9 +28,8 @@ export async function generateMedia(formData: FormData): Promise<{
   // --- Read data from FormData ---
   const prompt = formData.get('prompt') as string;
   const generationMode = formData.get('generationMode') as GenerationMode;
-  const mediaType = formData.get('mediaType') as MediaType; // Actual type being generated
+  const mediaType = formData.get('mediaType') as MediaType;
 
-  // Get URLs directly from FormData (sent by client after direct upload/selection)
   const startImageUrl = formData.get('startImageUrl') as string | null;
   const endImageUrl = formData.get('endImageUrl') as string | null;
 
@@ -46,7 +38,6 @@ export async function generateMedia(formData: FormData): Promise<{
     return { success: false, error: 'Missing required fields' };
   }
   if (generationMode === 'firstLastFrameVideo') {
-    // Now just check if the URLs were provided
     if (!startImageUrl) return { success: false, error: 'Missing start image URL' };
     if (!endImageUrl) return { success: false, error: 'Missing end image URL' };
   }
@@ -57,16 +48,35 @@ export async function generateMedia(formData: FormData): Promise<{
   }
 
   try {
-    // 1. Check and deduct credits
-    const creditSuccess = await useCredits(
-      user.id,
-      creditCost,
-      `Generate ${generationMode}: "${prompt.slice(0, 30)}${prompt.length > 30 ? '...' : ''}"`
-    );
-    if (!creditSuccess) { return { success: false, error: 'Not enough credits' }; }
+    // 1. Get credits - getUserCredits takes no parameters
+    const creditsInfo = await getUserCredits();
+    
+    // Check if total credits are sufficient
+    if (creditsInfo.total < creditCost) {
+      return { success: false, error: 'Not enough credits' };
+    }
+    
+    // 2. Deduct credits - we'll use credit_usage table
+    // Record credit usage
+    const description = `Generate ${generationMode}: "${prompt.slice(0, 30)}${prompt.length > 30 ? '...' : ''}"`;
+    
+    const { error: creditError } = await supabaseAdmin
+      .from('credit_usage')
+      .insert({
+        user_id: user.id,
+        amount: creditCost, 
+        description: description,
+        created_at: new Date().toISOString()
+      });
+    
+    if (creditError) {
+      console.error("[Action] Failed to record credit usage:", creditError);
+      return { success: false, error: 'Failed to deduct credits' };
+    }
+    
     console.log(`[Action] Credits deducted successfully for user ${user.id}`);
 
-    // 2. Create initial 'pending' record in DB
+    // 3. Create initial 'pending' record in DB
     const insertPayload: GeneratedMediaInsert = {
         user_id: user.id,
         prompt: prompt,
@@ -78,8 +88,8 @@ export async function generateMedia(formData: FormData): Promise<{
         metadata: { generationMode } // Store UI mode
     };
     if (generationMode === 'firstLastFrameVideo') {
-        insertPayload.start_image_url = startImageUrl; // Store URL from client
-        insertPayload.end_image_url = endImageUrl;     // Store URL from client
+        insertPayload.start_image_url = startImageUrl;
+        insertPayload.end_image_url = endImageUrl;
     }
     const { data: newMediaRecord, error: insertError } = await supabaseAdmin
       .from('generated_media').insert(insertPayload).select('id').single();
@@ -91,39 +101,44 @@ export async function generateMedia(formData: FormData): Promise<{
     const mediaId = newMediaRecord.id;
     console.log(`[Action] Initial media record created with ID: ${mediaId}`);
 
-    // 3. Prepare payload for the Edge Function (includes URLs now)
-    const functionPayload: any = { prompt, mediaType, generationMode, mediaId };
+    // 4. Prepare payload for the Edge Function (includes URLs now)
+    interface FunctionPayload {
+      prompt: string;
+      mediaType: MediaType;
+      generationMode: GenerationMode;
+      mediaId: string;
+      startImageUrl?: string | null;
+      endImageUrl?: string | null;
+    }
+    const functionPayload: FunctionPayload = { prompt, mediaType, generationMode, mediaId };
     if (generationMode === 'firstLastFrameVideo') {
-        functionPayload.startImageUrl = startImageUrl; // Pass URL
-        functionPayload.endImageUrl = endImageUrl;     // Pass URL
+        functionPayload.startImageUrl = startImageUrl;
+        functionPayload.endImageUrl = endImageUrl;
     }
 
-    // 4. Start the Supabase Function (Fire and Forget from Action's perspective)
+    // 5. Start the Supabase Function (Fire and Forget from Action's perspective)
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     supabase.functions.invoke('generate-media-handler', { body: functionPayload })
-    .then(response => { // Log success/failure of INVOCATION only
+    .then(response => {
       if (response.error) {
-         // Log the invocation error, but DON'T update DB status here
          console.error(`[Action] Edge Function invocation for ${mediaId} reported an error (status might still be processing):`, response.error);
       } else {
          console.log(`[Action] Edge Function invocation for ${mediaId} acknowledged successfully (processing should start).`);
       }
     })
-    .catch(error => { // Catch errors in the invoke call itself
-       // Log the invocation error, but DON'T update DB status here
+    .catch(error => {
        console.error(`[Action] Error invoking Edge Function for ${mediaId} (status might still be processing):`, error);
     });
 
-    // 5. Revalidate path immediately to show pending state
+    // 6. Revalidate path immediately to show pending state
     revalidatePath('/dashboard');
 
-    // 6. Return success (indicates the process was initiated)
+    // 7. Return success (indicates the process was initiated)
     return { success: true, mediaId: mediaId };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[Action] Error in generateMedia action:', error);
-    // If the error happened before invocation (e.g., credit deduction), return error
-    return { success: false, error: error.message };
+    return { success: false, error: error instanceof Error ? error.message : String(error) };
   }
 }
 
@@ -147,12 +162,14 @@ export async function checkMediaStatus(mediaId: string): Promise<GenerationResul
     // If already completed or failed in DB, return that status
     if (mediaRecord.status === 'completed' || mediaRecord.status === 'failed') {
       console.log(`[Action] Status for ${mediaId} from DB is final: ${mediaRecord.status}`);
-      const metadata = mediaRecord.metadata as any;
+      type MediaMetadata = { error?: string; run_id?: string; [key: string]: unknown };
+      const metadata = mediaRecord.metadata as MediaMetadata;
       return { success: mediaRecord.status === 'completed', status: mediaRecord.status, mediaUrl: mediaRecord.media_url || undefined, error: mediaRecord.status === 'failed' ? (metadata?.error || 'Failed') : undefined };
     }
 
     // Get run_id from metadata
-    const runId = (mediaRecord.metadata as any)?.run_id;
+    type MediaMetadata = { run_id?: string; [key: string]: unknown };
+    const runId = (mediaRecord.metadata as MediaMetadata)?.run_id;
     if (!runId) {
       // run_id might not be set yet if function invocation was slightly delayed
       console.warn(`[Action] run_id not yet found for mediaId ${mediaId}. DB status: ${mediaRecord.status}. Continuing poll...`);
@@ -171,10 +188,10 @@ export async function checkMediaStatus(mediaId: string): Promise<GenerationResul
     }
     return serviceResult; // Return result from service
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`[Action] Error in checkMediaStatus for ${mediaId}:`, error);
     // Return failed status if the action itself encounters an error
-    return { success: false, error: error.message, status: 'failed' };
+    return { success: false, error: error instanceof Error ? error.message : String(error), status: 'failed' };
   }
 }
 
@@ -216,9 +233,9 @@ export async function deleteMedia(mediaId: string, storagePath: string | null): 
 
       revalidatePath('/dashboard');
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`[Action] Unexpected error during media deletion for ${mediaId}:`, error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : String(error) };
     }
 }
 
@@ -246,9 +263,9 @@ export async function fetchUserMedia(): Promise<{
 
     if (error) { throw new Error(`Failed to fetch media: ${error.message}`); }
     return { success: true, media: data || [], error: undefined };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[Action] Error fetching user media:', error);
-    return { success: false, error: error.message, media: [] };
+    return { success: false, error: error instanceof Error ? error.message : String(error), media: [] };
   }
 }
 
@@ -293,8 +310,8 @@ export async function listUserImagesForSelection(): Promise<{
         fetchedImages.sort((a, b) => a.label.localeCompare(b.label));
         return { success: true, images: fetchedImages };
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('[Action] Error listing user images:', error);
-        return { success: false, images: [], error: error.message };
+        return { success: false, images: [], error: error instanceof Error ? error.message : String(error) };
     }
 }

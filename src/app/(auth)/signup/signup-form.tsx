@@ -46,7 +46,12 @@ export function SignupForm() {
     }
   }
   
-  const formFields = [
+  const formFields: {
+    name: keyof TSignupSchema;
+    label: string;
+    placeholder: string;
+    type: string;
+  }[] = [
     { name: "full_name", label: "Name", placeholder: "Your Name", type: "text" },
     { name: "email", label: "Email", placeholder: "you@example.com", type: "email" },
     { name: "password", label: "Password", placeholder: "••••••••", type: "password" },
@@ -59,12 +64,11 @@ export function SignupForm() {
           <motion.div
             key={field.name}
             initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.1 * i }}
           >
             <FormField
               control={form.control}
-              name={field.name as any}
+              name={field.name}
               render={({ field: formField }) => (
                 <FormItem>
                   <FormLabel className="text-foreground/90">{field.label}</FormLabel>

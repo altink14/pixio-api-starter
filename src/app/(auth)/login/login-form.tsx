@@ -45,7 +45,12 @@ export function LoginForm() {
     }
   }
   
-  const formFields = [
+  const formFields: {
+    name: keyof TLoginSchema;
+    label: string;
+    placeholder: string;
+    type: string;
+  }[] = [
     { name: "email", label: "Email", placeholder: "you@example.com", type: "email" },
     { name: "password", label: "Password", placeholder: "••••••••", type: "password" },
   ];
@@ -62,7 +67,7 @@ export function LoginForm() {
           >
             <FormField
               control={form.control}
-              name={field.name as any}
+              name={field.name}
               render={({ field: formField }) => (
                 <FormItem>
                   <FormLabel className="text-foreground/90">

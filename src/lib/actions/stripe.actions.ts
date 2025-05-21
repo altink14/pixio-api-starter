@@ -46,8 +46,12 @@ export async function createCustomerPortalSession() {
     } else {
       throw new Error('Failed to create portal session');
     }
-  } catch (error: any) {
-    console.error('Error creating portal session:', error.message);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error creating portal session:', error.message);
+    } else {
+      console.error('Error creating portal session:', error);
+    }
     return redirect('/account?error=portal_failed');
   }
 }

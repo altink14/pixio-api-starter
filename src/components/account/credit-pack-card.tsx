@@ -42,9 +42,13 @@ export function CreditPackCard({ creditPack }: CreditPackCardProps) {
       } else {
         throw new Error(data.error || 'Failed to create checkout session');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error:', error);
-      toast.error(error.message || 'Something went wrong');
+      if (error instanceof Error) {
+        toast.error(error.message || 'Something went wrong');
+      } else {
+        toast.error('Something went wrong');
+      }
       setIsLoading(false);
     }
   };

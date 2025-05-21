@@ -62,8 +62,9 @@ export async function POST(request: NextRequest) {
     });
     
     return NextResponse.json({ url: session.url });
-  } catch (error: any) {
-    console.error('Error creating credit purchase session:', error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error('Error creating credit purchase session:', errorMessage);
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

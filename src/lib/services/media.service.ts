@@ -83,9 +83,10 @@ export async function triggerMediaGeneration(
       runId: run_id,
       status: 'processing'
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error triggering media generation:', error);
-    return { success: false, error: error.message };
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return { success: false, error: errorMessage };
   }
 }
 
@@ -143,8 +144,12 @@ export async function checkGenerationStatus(mediaId: string, runId: string): Pro
           console.error(`Cannot access output URL: ${mediaUrl}`);
           throw new Error(`Cannot access output URL: ${mediaUrl}`);
         }
-      } catch (urlError: any) {
-        console.error(`Error testing URL: ${urlError.message}`);
+      } catch (urlError: unknown) {
+        if (urlError instanceof Error) {
+          console.error(`Error testing URL: ${urlError.message}`);
+        } else {
+          console.error(`Error testing URL:`, urlError);
+        }
         throw urlError;
       }
       
@@ -296,30 +301,32 @@ export async function checkGenerationStatus(mediaId: string, runId: string): Pro
       success: true, 
       status: output.status || 'processing' 
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error checking generation status:', error);
-    
+
     // Update the record with the error
     try {
+      const errorMessage = error instanceof Error ? error.message : String(error);
       const { error: updateError } = await supabaseAdmin
         .from('generated_media')
         .update({
           status: 'failed',
           metadata: {
-            error: error.message,
+            error: errorMessage,
             failed_at: new Date().toISOString()
           }
         })
         .eq('id', mediaId);
-        
+
       if (updateError) {
         console.error('Failed to update error status:', updateError);
       }
     } catch (dbError) {
       console.error('Failed to update error status:', dbError);
     }
-    
-    return { success: false, error: error.message };
+
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return { success: false, error: errorMessage };
   }
 }
 
@@ -348,9 +355,10 @@ export async function getUserMedia(userId: string, limit: number = 20): Promise<
     console.log(`Found ${data?.length || 0} completed media items for user ${userId}`);
     
     return { success: true, media: data || [] };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching user media:', error);
-    return { success: false, error: error.message, media: [] };
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return { success: false, error: errorMessage, media: [] };
   }
 }
 
@@ -379,8 +387,9 @@ export async function getMediaDetails(mediaId: string, userId: string): Promise<
     }
     
     return { success: true, media: data };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching media details:', error);
-    return { success: false, error: error.message };
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return { success: false, error: errorMessage };
   }
 }

@@ -47,8 +47,12 @@ export function UpdateProfileForm({ profile }: UpdateProfileFormProps) {
       } else if (result?.success) {
         toast.success('Profile updated successfully');
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Something went wrong');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message || 'Something went wrong');
+      } else {
+        toast.error('Something went wrong');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -72,7 +76,7 @@ export function UpdateProfileForm({ profile }: UpdateProfileFormProps) {
            >
             <FormField
               control={form.control}
-              name={field.name as any}
+              name={field.name as keyof TUpdateProfileSchema}
               render={({ field: formField }) => (
                 <FormItem>
                   {/* Styled Label */}

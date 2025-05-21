@@ -24,9 +24,11 @@ export function ManageSubscriptionButton() {
       } else {
         throw new Error(data.error || 'Failed to create customer portal session');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error:', error);
-      toast.error(error.message || 'Something went wrong');
+      const errorMessage =
+        error instanceof Error ? error.message : 'Something went wrong';
+      toast.error(errorMessage);
       setIsLoading(false);
     }
   };

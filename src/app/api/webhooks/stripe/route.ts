@@ -27,9 +27,10 @@ export async function POST(req: Request) {
 
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-    } catch (err: any) {
-      console.error(`Webhook Error: ${err.message}`);
-      return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      console.error(`Webhook Error: ${errorMessage}`);
+      return new NextResponse(`Webhook Error: ${errorMessage}`, { status: 400 });
     }
 
     // Define the events we specifically handle
@@ -60,7 +61,7 @@ export async function POST(req: Request) {
             break;
           case 'customer.subscription.created':
           case 'customer.subscription.updated':
-          case 'customer.subscription.deleted':
+          case 'customer.subscription.deleted': {
             const subscription = event.data.object as Stripe.Subscription;
             await manageSubscriptionStatusChange(
               subscription.id,
@@ -68,7 +69,8 @@ export async function POST(req: Request) {
               event.type === 'customer.subscription.created'
             );
             break;
-          case 'checkout.session.completed':
+          }
+          case 'checkout.session.completed': {
             const checkoutSession = event.data.object as Stripe.Checkout.Session;
             
             // Handle credit purchases
@@ -115,11 +117,13 @@ export async function POST(req: Request) {
               }
             }
             break;
+          }
           case 'invoice.paid':
-          case 'invoice.payment_succeeded':
+          case 'invoice.payment_succeeded': {
             // Handle invoice payment for subscription renewal
-            const invoice = event.data.object as any;
-            if (invoice && invoice.customer && invoice.subscription) {
+            const invoice = event.data.object as Stripe.Invoice;
+            // 'subscription' is optional on Stripe.Invoice, so check with 'in' operator or optional chaining
+            if (invoice && invoice.customer && 'subscription' in invoice && invoice.subscription) {
               await manageSubscriptionStatusChange(
                 invoice.subscription as string,
                 invoice.customer as string,
@@ -127,6 +131,7 @@ export async function POST(req: Request) {
               );
             }
             break;
+          }
         }
       } catch (error) {
         console.error('Webhook handler error:', error);

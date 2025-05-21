@@ -220,7 +220,11 @@ function MediaCard({ item, onDeleted }: MediaCardProps) {
       document.body.appendChild(a); a.click();
       window.URL.revokeObjectURL(url); document.body.removeChild(a);
       toast.success(`${item.media_type} downloaded`);
-    } catch (error: any) { console.error('Download failed:', error); toast.error(`Download failed: ${error.message}`); }
+    } catch (error: unknown) { 
+      console.error('Download failed:', error); 
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      toast.error(`Download failed: ${message}`); 
+    }
   };
 
   const copyPrompt = (e: React.MouseEvent) => {
@@ -239,7 +243,11 @@ function MediaCard({ item, onDeleted }: MediaCardProps) {
       const result = await deleteMedia(item.id, item.storage_path);
       if (result.success) onDeleted(); // Parent handles UI update and success toast
       else { toast.error(`Delete failed: ${result.error}`); setIsDeleting(false); }
-    } catch (error: any) { toast.error(`Error deleting: ${error.message}`); setIsDeleting(false); }
+    } catch (error: unknown) { 
+      const message = error instanceof Error ? error.message : String(error);
+      toast.error(`Error deleting: ${message}`); 
+      setIsDeleting(false); 
+    }
   };
 
   const isLoading = item.status === 'pending' || item.status === 'processing';

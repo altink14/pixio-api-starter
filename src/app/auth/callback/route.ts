@@ -23,10 +23,10 @@ export async function GET(request: NextRequest) {
   
   const supabase = await createClient();
   
-  if (token_hash && type) {
+  if (token_hash && type && ['signup', 'invite', 'magiclink', 'recovery'].includes(type)) {
     // Handle email OTP login
     const { error } = await supabase.auth.verifyOtp({
-      type: type as any,
+      type: type as 'signup' | 'invite' | 'magiclink' | 'recovery',
       token_hash
     });
     
